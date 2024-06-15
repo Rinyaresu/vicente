@@ -23,11 +23,8 @@
             <outline type="rss" text="The Pragmatic Engineer" title="The Pragmatic Engineer" xmlUrl="https://newsletter.pragmaticengineer.com/feed" htmlUrl="https://newsletter.pragmaticengineer.com"/>
         </outline>
         <outline text="Uncategorized" title="Uncategorized">
-            <outline type="rss" text="Laurence Tratt: Blog" title="Laurence Tratt: Blog" xmlUrl="https://tratt.net/laurie/blog/blog.rss" htmlUrl="https://tratt.net/"/>
             <outline type="rss" text="daniel.haxx.se" title="daniel.haxx.se" xmlUrl="https://daniel.haxx.se/blog/feed/" htmlUrl="https://daniel.haxx.se/blog"/>
-            <outline type="rss" text="AAAS: Keyword search for query" title="AAAS: Keyword search for query" xmlUrl="https://www.science.org/blogs/pipeline/feed" htmlUrl="https://www.science.org"/>
             <outline type="rss" text="Chips and Cheese" title="Chips and Cheese" xmlUrl="https://chipsandcheese.com/feed/" htmlUrl="https://chipsandcheese.com"/>
-            <outline type="rss" text="TK's Blog" title="TK's Blog" xmlUrl="https://www.iamtk.co/rss.xml" htmlUrl="https://iamtk.co"/>
             <outline type="rss" text="Fernando Borretti" title="Fernando Borretti" xmlUrl="https://borretti.me/feed.xml" htmlUrl="https://borretti.me/"/>
             <outline type="rss" text="Farnam Street" title="Farnam Street" xmlUrl="https://fs.blog/rss" htmlUrl="https://fs.blog/"/>
             <outline type="rss" text="Byte Cellar" title="Byte Cellar" xmlUrl="https://bytecellar.com/feed/" htmlUrl="https://bytecellar.com/"/>

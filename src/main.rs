@@ -1,6 +1,9 @@
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use actix_cors::Cors;
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use chrono::{DateTime, Duration, Utc};
 use reqwest;
 use serde::Serialize;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use xml::reader::{EventReader, XmlEvent};
@@ -65,7 +68,9 @@ async fn get_opml() -> impl Responder {
 }
 
 #[get("/articles")]
-async fn get_articles() -> impl Responder {
+async fn get_articles(query: web::Query<HashMap<String, String>>) -> impl Responder {
+    let date_filter = Utc::now() - Duration::days(5);
+
     match get_feeds().await {
         Ok(feeds) => {
             let mut articles = Vec::new();
@@ -87,6 +92,7 @@ async fn get_articles() -> impl Responder {
                         };
                         let mut inside_item = false;
                         let mut inside_content_encoded = false;
+                        let mut current_element = String::new();
                         let mut text = String::new();
 
                         for e in parser {
@@ -95,6 +101,7 @@ async fn get_articles() -> impl Responder {
                                     if name.local_name == "item" {
                                         inside_item = true;
                                     } else if inside_item {
+                                        current_element = name.local_name.clone();
                                         text = String::new();
                                         if name.local_name == "encoded"
                                             && name.namespace.as_deref()
@@ -114,8 +121,12 @@ async fn get_articles() -> impl Responder {
                                     }
                                 }
                                 Ok(XmlEvent::CData(content)) => {
-                                    if inside_item && inside_content_encoded {
-                                        current_article.content_encoded.push_str(&content);
+                                    if inside_item {
+                                        if inside_content_encoded {
+                                            current_article.content_encoded.push_str(&content);
+                                        } else {
+                                            text.push_str(&content);
+                                        }
                                     }
                                 }
                                 Ok(XmlEvent::EndElement { name }) => {
@@ -152,6 +163,15 @@ async fn get_articles() -> impl Responder {
                                                 }
                                             }
                                             "item" => {
+                                                let pub_date = DateTime::parse_from_rfc2822(
+                                                    &current_article.pub_date,
+                                                )
+                                                .map(|dt| dt.with_timezone(&Utc))
+                                                .unwrap_or_else(|_| Utc::now());
+                                                if pub_date < date_filter {
+                                                    continue;
+                                                }
+
                                                 if current_article.content_encoded.is_empty() {
                                                     empty_content_encoded_count += 1;
                                                 }
@@ -235,8 +255,22 @@ async fn get_feeds() -> Result<Vec<Feed>, std::io::Error> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| App::new().service(get_opml).service(get_articles))
-        .bind("127.0.0.1:8080")?
-        .run()
-        .await
+    HttpServer::new(|| {
+        App::new()
+            .wrap(
+                Cors::default()
+                    .allowed_origin("http://192.168.1.91:4321")
+                    .allowed_methods(vec!["GET", "POST"])
+                    .allowed_headers(vec![
+                        actix_web::http::header::CONTENT_TYPE,
+                        actix_web::http::header::ACCEPT,
+                    ])
+                    .max_age(3600),
+            )
+            .service(get_opml)
+            .service(get_articles)
+    })
+    .bind("0.0.0.0:8080")?
+    .run()
+    .await
 }
