@@ -77,13 +77,13 @@ async fn get_articles(
 ) -> impl Responder {
     println!("Starting to fetch articles...");
 
-    let date_filter = Utc::now() - Duration::days(5);
+    let date_filter = Utc::now() - Duration::days(6);
     let cache = data.cache.clone();
 
     match get_feeds().await {
         Ok(feeds) => {
             let client = Client::new();
-            let semaphore = Arc::new(Semaphore::new(10)); // Limite de 10 requests concorrentes
+            let semaphore = Arc::new(Semaphore::new(10));
 
             let article_futures = feeds.into_iter().map(|feed| {
                 let client = client.clone();
@@ -102,7 +102,7 @@ async fn get_articles(
                     }
 
                     println!("Fetching feed: {}", feed_title);
-                    let permit = semaphore.acquire_owned().await.unwrap(); // Adquirir o permit
+                    let permit = semaphore.acquire_owned().await.unwrap();
                     let articles = fetch_articles_from_feed(
                         client,
                         xml_url,
